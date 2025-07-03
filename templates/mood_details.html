@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MoodMate: {{ mood_name | default('Neutral') | capitalize }} Mood Details</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style4.css') }}">
+</head>
+<body>
+
+  <header class="top-nav">
+    <div class="website-name">MoodMate🌈</div>
+  </header>
+
+  <div class="background-animation-container"></div>
+
+  <div class="container">
+    <a href="/" class="back-button">← Back to Mood Detection</a>
+    
+    <h1 class="details-page-heading">
+      Your Mood: 
+      <span id="moodNameDetails">{{ mood_name | default('Neutral') | capitalize }}</span> 
+      <span id="moodEmojiDetails">{{ mood_emoji | default('😐') }}</span>
+    </h1>
+
+    <div class="suggestions-grid">
+      
+      <div class="suggestion-box tip-box">
+        <strong>🌈 Tip:</strong>
+        <p id="tipContentDetails">{{ tip | default('Take care of yourself.') }}</p>
+      </div>
+
+      <div class="bottom-content-grid">
+
+        <div class="suggestion-box ai-box">
+          <strong>🧠 AI Suggestion:</strong>
+          <p id="aiSuggestionDetails">{{ suggestion | default('Breathe and reflect.') }}</p>
+        </div>
+
+        <div class="suggestion-box playlist-box">
+          <strong>🎧 Mood Playlist:</strong>
+          
+          {% if playlist_url %}
+          <iframe src="{{ playlist_url }}" width="100%" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+          {% else %}
+          <p>No playlist found for this mood.</p>
+          {% endif %}
+
+          <ul id="playlistSongsDetails">
+            {% if playlist_songs %}
+              {% for song in playlist_songs %}
+                <li>{{ song }}</li>
+              {% endfor %}
+            {% else %}
+              <li>No songs available.</li>
+            {% endif %}
+          </ul>
+
+          <a href="/create_playlist/{{ mood_name | default('neutral') }}" class="create-playlist-btn">
+            ➕ Create Your Own Mood Playlist
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='script2.js') }}" defer></script>
+</body>
+</html>
