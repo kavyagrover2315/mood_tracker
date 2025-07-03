@@ -288,7 +288,7 @@ def edit_mood(mood_id):
     success = db_manager.edit_mood(mood_id, data['name'], data['emoji'], data['reason'])
     return jsonify(status='success' if success else 'fail')
 
-import os
+
 
 if __name__ == "__main__":
     db_manager.init_db()
