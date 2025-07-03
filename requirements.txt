@@ -1,0 +1,9 @@
+flask
+gunicorn
+Flask
+requests
+spotipy
+flask-cors
+werkzeug
+transformers
+torch
