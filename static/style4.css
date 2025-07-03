@@ -1,0 +1,636 @@
+/* General Body and HTML structure */
+body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(135deg, #9adbe4, #e1f5fe);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column; /* Stacks header, background, and container */
+    align-items: center; /* Centers horizontally in column flex */
+    padding: 0; /* No body padding so header spans full width */
+    color: #333;
+    line-height: 1.6;
+    overflow-x: hidden; /* Prevent horizontal scrollbar */
+    position: relative;
+    margin: 0; /* Ensure no default body margin */
+}
+
+/* NEW: Top Navigation Styling */
+.top-nav {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 12px 20px; /* Slightly increased padding for better spacing */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    z-index: 100;
+    position: sticky;
+    top: 0;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex; /* Make it a flex container */
+    justify-content: flex-start; /* Align content to the left */
+    align-items: center; /* Vertically center content */
+}
+
+.website-name {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1976d2;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    display: flex; /* Make the text and emoji flex items */
+    align-items: center; /* Vertically align text and emoji */
+    gap: 8px; /* Space between text and emoji */
+}
+
+.website-name .emoji.rainbow {
+    font-size: 1.2em; /* Size of the rainbow emoji */
+    filter: drop-shadow(0 0 2px rgba(0,0,0,0.1)); /* Optional: subtle shadow for emoji */
+}
+
+
+/* Background animation container */
+.background-animation-container {
+    position: fixed;
+    /* Adjust top based on the actual height of your .top-nav */
+    /* You might need to inspect the .top-nav height in your browser's dev tools */
+    top: 55px; /* Assuming top-nav is approx 55px tall (padding + font-size) */
+    left: 0;
+    width: 100%;
+    height: calc(100% - 55px); /* Adjusted height to fill remaining space */
+    pointer-events: none;
+    z-index: 0; /* Ensure it's behind the main container */
+}
+
+/* Styles for floating elements */
+.floating-element {
+    position: absolute;
+    opacity: 0;
+    animation: floatUp 9.5s ease-in forwards;
+    will-change: transform, opacity;
+}
+
+.floating-element.bubble {
+    background-color: rgba(255, 255, 255, 0.45);
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+.floating-element.heart {
+    color: rgba(255, 99, 132, 0.65);
+    font-size: 1.9em;
+    text-shadow: 0 0 4px rgba(255, 99, 132, 0.4);
+}
+
+.floating-element.emoji {
+    font-size: 1.9em;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Keyframe animation for floating elements */
+@keyframes floatUp {
+    0% {
+        transform: translateY(0) translateX(0) scale(0.75);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100vh) translateX(var(--x-drift)) scale(1.15);
+        opacity: 0;
+    }
+}
+
+/* Main Container Box */
+.container {
+    max-width: 85%;
+    width: 100%;
+    background: #c2ecf1;
+    border-radius: 22px;
+    box-shadow: 0 14px 42px rgba(221, 87, 143, 0.14);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+    z-index: 1; /* Keep main content above background animation */
+    margin: 25px auto;
+}
+
+h1 {
+    font-size: 30px;
+    color: #2c3e50;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 14px;
+}
+
+/* Input Section Styling */
+.input-section {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.input-section form {
+    display: flex;
+    gap: 9px;
+    width: 100%;
+    max-width: 480px;
+    background: #f8f8f8;
+    padding: 11px;
+    border-radius: 14px;
+    box-shadow: inset 0 2px 7px rgba(0, 0, 0, 0.04);
+}
+
+.input-section input[type="text"] {
+    flex-grow: 1;
+    padding: 11px 14px;
+    border-radius: 11px;
+    border: 1px solid #e0e0e0;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-section input[type="text"]:focus {
+    border-color: #4caf50;
+    box-shadow: 0 0 0 2.8px rgba(76, 175, 80, 0.18);
+}
+
+.input-section button {
+    background: #4caf50;
+    border: none;
+    color: white;
+    padding: 11px 20px;
+    border-radius: 11px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    white-space: nowrap;
+}
+
+.input-section button:hover {
+    background: #388e3c;
+    transform: translateY(-1.8px);
+}
+
+/* Mood Display Styling */
+.mood-display {
+    background: #8ec0e4;
+    padding: 9px;
+    border-radius: 11px;
+    box-shadow: 0 4.5px 14px rgba(0, 0, 0, 0.07);
+    text-align: center;
+    margin-top: 14px;
+}
+.mood-display h2 {
+    font-size: 19px;
+    margin: 0;
+    color: #1976d2;
+    font-weight: 500;
+}
+
+.mood-display .emoji {
+    font-size: 25px;
+    margin-left: 7px;
+    vertical-align: middle;
+}
+
+.emoji.pulse {
+    animation: pulse 1.1s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* New style for clickable mood display */
+.clickable-mood-display {
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.clickable-mood-display:hover {
+    transform: translateY(-2.8px);
+    box-shadow: 0 7.5px 19px rgba(0, 0, 0, 0.14);
+}
+
+.clickable-mood-display .click-instruction {
+    font-size: 12.5px;
+    color: #666;
+    margin-top: 7px;
+    display: none;
+}
+
+/* AI MOOD MATE Button Styling (made slightly bigger and centered) */
+.ai-mood-mate-button {
+    display: block; /* Changed to block to allow margin: auto for centering */
+    width: fit-content; /* Adjust width to content */
+    background: #6c757d;
+    color: white;
+    padding: 12px 25px; /* Increased padding to make it bigger */
+    border-radius: 12px; /* Increased border-radius */
+    font-size: 16px; /* Increased font size */
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.3s ease, transform 0.2s ease;
+    margin: 20px auto 0 auto; /* Centered with top margin */
+}
+
+.ai-mood-mate-button:hover {
+    background: #5a6268;
+    transform: translateY(-2.5px); /* Adjusted transform */
+}
+
+
+/* --- Styles for Mood Details Page (mood_details.html) --- */
+
+/* Suggestions Grid Styling */
+.suggestions-grid {
+    display: grid;
+    grid-template-areas:
+        "tip-area"
+        "bottom-area";
+    gap: 19px;
+    margin-top: 23px;
+}
+
+/* Assign grid areas */
+.tip-box {
+    grid-area: tip-area;
+}
+
+.bottom-content-grid {
+    grid-area: bottom-area;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 19px;
+}
+
+.suggestion-box {
+    background-color: #fefefe;
+    padding: 19px;
+    border-radius: 14px;
+    text-align: left;
+    border-left: 5.5px solid;
+    box-shadow: 0 4.5px 14px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.suggestion-box:hover {
+    transform: translateY(-2.8px);
+    box-shadow: 0 7.5px 19px rgba(0, 0, 0, 0.09);
+}
+
+.suggestion-box strong {
+    display: block;
+    margin-bottom: 9px;
+    font-weight: 800;
+    font-size: 17px;
+    color: #222;
+}
+
+.suggestion-box p {
+    font-size: 14px;
+    color: #555;
+}
+
+/* Specific Border Colors for Suggestion Boxes */
+.tip-box {
+    border-color: #ffca28;
+}
+
+.ai-box {
+    border-color: #ba68c8;
+}
+
+.playlist-box {
+    border-color: #4db6ac;
+}
+
+/* Playlist Specific Styling */
+.playlist-box iframe {
+    border-radius: 11px;
+    margin: 9px 0;
+    box-shadow: 0 1.8px 9px rgba(0, 0, 0, 0.04);
+}
+
+.playlist-box ul {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 9px;
+}
+
+.playlist-box ul li {
+    margin-bottom: 4.5px;
+    font-weight: 500;
+    color: #333;
+    padding-left: 19px;
+    position: relative;
+    font-size: 13.5px;
+}
+
+.playlist-box ul li::before {
+    content: "🎵";
+    position: absolute;
+    left: 0;
+    color: #4db6ac;
+}
+
+.playlist-box a {
+    display: inline-block;
+    margin-top: 14px;
+    background: #66bb6a;
+    color: white;
+    padding: 9px 20px;
+    border-radius: 11px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: background 0.3s ease, transform 0.2s ease;
+    font-size: 14px;
+}
+
+.playlist-box a:hover {
+    background: #4caf50;
+    transform: translateY(-1.8px);
+}
+
+/* Styles for Mood Details Page Heading */
+.details-page-heading {
+    margin-top: 0;
+    font-size: 26px;
+    color: #1976d2;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+}
+.details-page-heading .emoji {
+    font-size: 30px;
+}
+
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #f0f4f8;
+    color: #555;
+    padding: 7.5px 14px;
+    border-radius: 7.5px;
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 19px;
+    transition: background 0.3s ease, color 0.3s ease;
+    font-size: 13.5px;
+    align-self: flex-start;
+}
+
+.back-button:hover {
+    background: #e0e7ee;
+    color: #333;
+}
+
+/* Style for the "Browse All Playlists" link on the index page */
+.browse-all-playlists-link {
+    display: block;
+    width: fit-content;
+    margin: 24px auto 0 auto; /* Reduced margin */
+    background: #607d8b;
+    color: white;
+    padding: 10px 20px; /* Consistent padding */
+    border-radius: 11px; /* Slightly smaller border-radius */
+    text-decoration: none;
+    font-weight: 700;
+    transition: background 0.3s ease, transform 0.2s ease;
+    font-size: 14.5px; /* Slightly reduced font size */
+    text-align: center;
+}
+
+.browse-all-playlists-link:hover {
+    background: #455a64;
+    transform: translateY(-1.8px);
+}
+
+/* All Playlists Grid Styling */
+.section-heading {
+    font-size: 22px; /* Reduced font size */
+    color: #2c3e50;
+    font-weight: 800;
+    text-align: center;
+    margin-top: 28px; /* Reduced margin */
+    margin-bottom: 14px; /* Reduced margin */
+}
+
+.all-playlists-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); /* Adjusted minmax for smaller cards */
+    gap: 19px; /* Reduced gap */
+}
+
+.playlist-card {
+    background-color: #fefefe;
+    padding: 17px; /* Reduced padding */
+    border-radius: 14px; /* Slightly smaller border-radius */
+    text-align: center;
+    border-left: 5.5px solid #78909c; /* Thinner border */
+    box-shadow: 0 3.8px 14px rgba(0, 0, 0, 0.04); /* Slightly smaller shadow */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.playlist-card:hover {
+    transform: translateY(-2.8px);
+    box-shadow: 0 7.5px 23px rgba(0, 0, 0, 0.09);
+}
+
+.playlist-card h3 {
+    font-size: 18px; /* Reduced font size */
+    margin-bottom: 7px; /* Reduced margin */
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px; /* Reduced gap */
+}
+
+.playlist-card h3 .emoji {
+    font-size: 20px; /* Reduced emoji size */
+}
+
+.playlist-card iframe {
+    border-radius: 9px; /* Slightly smaller border-radius */
+    margin: 7px auto; /* Reduced margin */
+    box-shadow: 0 0.9px 4.5px rgba(0, 0, 0, 0.02); /* Slightly smaller shadow */
+}
+
+.playlist-card-songs {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 9px; /* Reduced margin */
+    text-align: left;
+}
+
+.playlist-card-songs li {
+    margin-bottom: 3.5px; /* Reduced margin */
+    font-weight: 500;
+    color: #333;
+    padding-left: 17px; /* Reduced padding */
+    position: relative;
+    font-size: 12.5px; /* Reduced font size */
+}
+
+.playlist-card-songs li::before {
+    content: "🎵";
+    position: absolute;
+    left: 0;
+    color: #4db6ac;
+}
+
+.view-details-btn {
+    display: inline-block;
+    margin-top: 14px; /* Reduced margin */
+    background: #42a5f5;
+    color: white;
+    padding: 7.5px 17px; /* Reduced padding */
+    border-radius: 7.5px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.3s ease, transform 0.2s ease;
+    font-size: 13.5px; /* Reduced font size */
+}
+
+.view-details-btn:hover {
+    background: #2196f3;
+    transform: translateY(-1.8px);
+}
+
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) { /* Laptops and larger tablets */
+    .top-nav {
+        padding: 10px 15px;
+    }
+    .website-name {
+        font-size: 20px;
+    }
+    .website-name .emoji.rainbow {
+        font-size: 1.1em;
+    }
+    .background-animation-container {
+        top: 48px;
+        height: calc(100% - 48px);
+    }
+    .container {
+        max-width: 88%;
+        padding: 16px;
+        gap: 11px;
+        margin: 20px auto;
+    }
+    h1 { font-size: 28px; }
+    .input-section form { max-width: 450px; }
+    .input-section input[type="text"],
+    .input-section button {
+        padding: 9px 13px;
+        font-size: 14px;
+    }
+    .mood-display h2 { font-size: 17px; }
+    .mood-display .emoji { font-size: 23px; }
+    .clickable-mood-display .click-instruction { font-size: 11.5px; }
+    .ai-mood-mate-button { padding: 10px 22px; font-size: 15px; } /* Adjusted size for responsive */
+    .suggestions-grid, .bottom-content-grid { gap: 14px; }
+    .suggestion-box { padding: 17px; border-radius: 11px; }
+    .suggestion-box strong { font-size: 15.5px; }
+    .suggestion-box p { font-size: 13.5px; }
+    .playlist-box a, .view-details-btn { padding: 7.5px 15px; font-size: 13.5px; }
+    .details-page-heading { font-size: 23px; }
+    .details-page-heading .emoji { font-size: 27px; }
+    .back-button { padding: 6.5px 11px; font-size: 12.5px; }
+}
+
+@media (max-width: 768px) { /* Tablets */
+    .top-nav {
+        padding: 9px 10px;
+    }
+    .website-name {
+        font-size: 17px;
+    }
+    .website-name .emoji.rainbow {
+        font-size: 1em;
+    }
+    .background-animation-container {
+        top: 42px;
+        height: calc(100% - 42px);
+    }
+    .container {
+        max-width: 92%;
+        padding: 14px;
+        gap: 9px;
+        margin: 10px auto;
+    }
+    h1 { font-size: 24px; }
+    .input-section form { flex-direction: column; max-width: 100%; padding: 9px; }
+    .input-section input[type="text"],
+    .input-section button { width: 100%; box-sizing: border-box; padding: 10px; }
+    .mood-display h2 { font-size: 16px; }
+    .mood-display .emoji { font-size: 20px; }
+    .ai-mood-mate-button { width: 100%; box-sizing: border-box; margin-top: 9px; padding: 9px 18px; font-size: 14.5px; } /* Adjusted for full width on smaller screens */
+    .suggestions-grid { gap: 14px; }
+    .bottom-content-grid { grid-template-columns: 1fr; }
+    .suggestion-box { padding: 14px; }
+    .suggestion-box strong { font-size: 14.5px; }
+    .suggestion-box p { font-size: 13px; }
+    .playlist-box a, .view-details-btn { font-size: 12.5px; padding: 6.5px 13px; }
+    .details-page-heading { font-size: 19px; }
+    .details-page-heading .emoji { font-size: 23px; }
+    .back-button { font-size: 12px; padding: 6px 10px; }
+}
+
+@media (max-width: 480px) { /* Mobile phones */
+    body { padding: 8px 4px; }
+    .top-nav {
+        padding: 7px 7px;
+    }
+    .website-name {
+        font-size: 15px;
+    }
+    .website-name .emoji.rainbow {
+        font-size: 0.9em;
+    }
+    .background-animation-container {
+        top: 36px;
+        height: calc(100% - 36px);
+    }
+    .container {
+        max-width: 98%;
+        border-radius: 14px;
+        padding: 9px;
+        gap: 7px;
+        margin: 7px auto;
+        box-shadow: 0 7px 28px rgba(0, 0, 0, 0.09);
+    }
+    h1 { font-size: 20px; margin-bottom: 9px; }
+    .input-section form { padding: 7px; border-radius: 9px; }
+    .input-section input[type="text"],
+    .input-section button { padding: 7px 9px; font-size: 13px; border-radius: 7.5px; }
+    .mood-display { padding: 7px; border-radius: 9px; margin-top: 9px; }
+    .mood-display h2 { font-size: 14.5px; }
+    .mood-display .emoji { font-size: 19px; margin-left: 4px; }
+    .clickable-mood-display .click-instruction { font-size: 10.5px; margin-top: 4px; }
+    .ai-mood-mate-button { padding: 7.5px 15px; font-size: 13.5px; border-radius: 7.5px; margin-top: 9px; }
+    .suggestions-grid { gap: 9px; margin-top: 14px; }
+    .suggestion-box { padding: 11px; border-radius: 9.5px; border-left-width: 3.8px; }
+    .suggestion-box strong { font-size: 13.5px; margin-bottom: 7px; }
+    .suggestion-box p { font-size: 11.5px; }
+    .playlist-box iframe { height: 55px; margin: 7px 0; border-radius: 7.5px; }
+    .playlist-box ul li { font-size: 10.5px; padding-left: 14px; }
+    .playlist-box a, .view-details-btn { padding: 5.5px 11px; font-size: 11.5px; border-radius: 7.5px; margin-top: 9px; }
+    .details-page-heading { font-size: 17px; gap: 4px; }
+    .details-page-heading .emoji { font-size: 20px; }
+    .back-button { padding: 4.5px 7.5px; font-size: 10.5px; border-radius: 5.5px; margin-bottom: 14px; }
+}
