@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MoodMate: How Are You Feeling?</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style4.css') }}">
+
+  <style>
+    /* Floating emojis and bubbles */
+    .background-animation-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .floating-emoji, .floating-bubble {
+      position: absolute;
+      font-size: 2.2rem;
+      animation: floatUp linear infinite;
+      opacity: 0.8;
+    }
+
+    .floating-emoji {
+      animation-duration: 4s;
+    }
+
+    .floating-bubble::before {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(135, 206, 250, 0.4);
+      animation-duration: 6s;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(100vh) translateX(0);
+        opacity: 0;
+      }
+      50% {
+        opacity: 0.9;
+      }
+      100% {
+        transform: translateY(-10vh) translateX(20px);
+        opacity: 0;
+      }
+    }
+
+    /* Glowing MoodMate button */
+    .browse-all-playlists-link {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 24px;
+      font-size: 1.2rem;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      text-decoration: none;
+      box-shadow: 0 0 10px #ff9a9e, 0 0 20px #fad0c4;
+      transition: all 0.4s ease-in-out;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .browse-all-playlists-link:hover {
+      background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+      box-shadow: 0 0 20px #a18cd1, 0 0 30px #fbc2eb;
+      transform: scale(1.05);
+    }
+
+    .input-section {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .input-section input[type="text"] {
+      padding: 14px 18px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="top-nav">
+    <div class="website-name">MoodMate 🌈</div>
+  </header>
+
+  <!-- Background animation -->
+  <div class="background-animation-container">
+    <div class="floating-emoji" style="left: 10%; animation-delay: 0s;">💖</div>
+    <div class="floating-emoji" style="left: 30%; animation-delay: 1.5s;">💗</div>
+    <div class="floating-emoji" style="left: 50%; animation-delay: 2.2s;">💕</div>
+    <div class="floating-emoji" style="left: 70%; animation-delay: 0.7s;">💘</div>
+    <div class="floating-emoji" style="left: 20%; animation-delay: 1s;">🌟</div>
+    <div class="floating-emoji" style="left: 40%; animation-delay: 2.5s;">🌸</div>
+    <div class="floating-emoji" style="left: 60%; animation-delay: 1.8s;">🌈</div>
+    <div class="floating-bubble" style="left: 15%; animation-delay: 1s;"></div>
+    <div class="floating-bubble" style="left: 35%; animation-delay: 2.5s;"></div>
+    <div class="floating-bubble" style="left: 55%; animation-delay: 3.5s;"></div>
+    <div class="floating-bubble" style="left: 75%; animation-delay: 2s;"></div>
+  </div>
+
+  <div class="container">
+    <h1>How Are You Feeling Today?</h1>
+
+    <!-- Mood input + fake button to trigger form -->
+    <div class="input-section">
+      <form id="moodForm" method="POST" action="/detect_mood">
+        <input type="text" name="text" placeholder="Tell me how you feel..." required />
+      </form>
+
+      <a href="#" onclick="document.getElementById('moodForm').submit();" class="browse-all-playlists-link">
+        ✨ Detect My Mood
+      </a>
+    </div>
+
+    {% if all_playlists %}
+    <div class="all-playlists-grid">
+      {% for playlist in all_playlists %}
+        <div class="playlist-card suggestion-box">
+          <h3>{{ playlist.mood_name }} <span class="emoji">{{ playlist.emoji }}</span></h3>
+          <iframe src="{{ playlist.playlist_url }}" width="100%" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+          <ul class="playlist-card-songs">
+            {% for song in playlist.songs %}
+              <li>{{ song }}</li>
+            {% endfor %}
+          </ul>
+          <a href="/mood_details/{{ playlist.mood_name | lower }}" class="view-details-btn">View Details →</a>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <script src="{{ url_for('static', filename='script2.js') }}" defer></script>
+</body>
+</html>
