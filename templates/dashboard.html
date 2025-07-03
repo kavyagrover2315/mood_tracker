@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MoodMate Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style3.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<header>
+  <div class="logo">MoodMate 🌈</div>
+  <nav>
+    <a href="#">Home</a>
+    <a href="{{ url_for('index1') }}">AI Suggestion</a>
+    <a href="#" class="add-btn" onclick="openPopup()">+ Add Mood</a>
+  </nav>
+</header>
+
+<div class="week-calendar-container">
+  <div class="week-calendar" id="weekCalendar"></div>
+</div>
+
+<div class="timeline" id="moodTimeline"></div>
+
+<div class="background-animation"></div>
+
+<!-- Mood Popup -->
+<div class="popup" id="popup">
+  <div class="popup-box">
+    <h2>What’s your Mood now?</h2>
+    <p>Select the mood that reflects how you're feeling</p>
+    <div id="addMoodForm">
+      <input type="hidden" id="selectedMoodInput" value="😐">
+
+      <div class="emoji-circle-container">
+        <div class="emoji-center" id="emojiName">Neutral</div>
+        <div class="emoji-item" data-name="Happy">😊</div>
+        <div class="emoji-item" data-name="Surprised">😲</div>
+        <div class="emoji-item" data-name="Angry">😡</div>
+        <div class="emoji-item" data-name="Sleepy">😴</div>
+        <div class="emoji-item" data-name="Excited">🤩</div>
+        <div class="emoji-item" data-name="In Love">😍</div>
+        <div class="emoji-item" data-name="Cool">😎</div>
+        <div class="emoji-item" data-name="Neutral">😐</div>
+        <div class="emoji-item" data-name="Cry">😭</div>
+      </div>
+
+      <div class="selected-mood-label" id="selectedMoodLabel">Selected Mood: Neutral</div>
+
+      <input type="text" id="reasonInput" placeholder="Reason for this mood">
+      <button type="button" id="submitMoodBtn">Add Mood</button>
+    </div>
+    <div id="message"></div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>
