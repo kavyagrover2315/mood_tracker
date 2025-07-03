@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Welcome to Mood Mate</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ffe6f0, #f3d9ff);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      background-color: #fdf6ff;
+      flex-wrap: wrap;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .login-btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 20px;
+      background-color: #a077f2;
+      color: white;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .content {
+      padding: 80px 40px 40px;
+      text-align: left;
+      max-width: 800px;
+    }
+
+    h1 {
+      font-size: 2.2em;
+      color: #1e1e1e;
+      margin-bottom: 22px;
+      line-height: 1.4;
+    }
+
+    .highlight {
+      color: #834fe3;
+      font-style: italic;
+    }
+
+    p {
+      font-size: 1.15em;
+      color: #444;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .start-btn {
+      padding: 12px 24px;
+      font-size: 1em;
+      border: none;
+      border-radius: 20px;
+      background-color: #9370db;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .start-btn:hover {
+      background-color: #7a5cc2;
+    }
+
+    .tree-container {
+      position: absolute;
+      top: 120px;
+      right: 60px;
+      width: 420px;
+      height: 550px;
+      z-index: 0;
+    }
+
+    .tree-img {
+      width: 100%;
+      height: auto;
+      filter: grayscale(100%);
+      opacity: 0.35;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .emoji-leaf {
+      position: absolute;
+      font-size: 24px;
+      z-index: 1;
+      transform: translate(-50%, -50%);
+      animation: leaf-wiggle 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes leaf-wiggle {
+      0% { transform: translate(-50%, -50%) rotate(-5deg); }
+      100% { transform: translate(-50%, -50%) rotate(5deg); }
+    }
+
+    #about {
+      padding: 50px 32px;
+      margin-top: 60px;
+      background: linear-gradient(to right, #fcd6ec, #e7c3f8);
+      color: #b30059;
+      font-size: 1.05em;
+      border-radius: 15px;
+      max-width: 92%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #about h2 {
+      font-size: 1.6em;
+      margin-bottom: 14px;
+      color: #2e2e2e;
+    }
+
+    @media (max-width: 1024px) {
+      .tree-container {
+        width: 280px;
+        height: 400px;
+        right: 10px;
+      }
+      .emoji-leaf {
+        font-size: 20px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+      }
+      .tree-container {
+        display: none;
+      }
+      .content {
+        padding: 50px 20px;
+      }
+      h1 {
+        font-size: 2em;
+      }
+      p {
+        font-size: 1.05em;
+      }
+      .start-btn {
+        font-size: 0.95em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Mood Mate</div>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#about">About Us</a>
+      <button class="login-btn" onclick="location.href='/login'">Login</button>
+    </nav>
+  </header>
+
+  <main class="content">
+    <h1>Welcome to <span class="highlight">Mood Mate</span> :<br>Your Personal Mood Companion</h1>
+    <p>
+      Discover the power of understanding your emotions with Mood Mate, the ultimate mood tracking website designed
+      to help you take control of your mental well-being.
+    </p>
+    <button class="start-btn" onclick="location.href='/login'">Start Tracking</button>
+  </main>
+
+  <div class="tree-container">
+    <img src="/static/tree.png" class="tree-img" />
+    <div class="emoji-leaf" style="top: 9.5%; left: 43%;">😊</div>
+    <div class="emoji-leaf" style="top: 14%; left: 62%;">😲</div>
+    <div class="emoji-leaf" style="top: 18%; left: 46%;">🥺</div>
+    <div class="emoji-leaf" style="top: 18.4%; left: 21%;">😍</div>
+    <div class="emoji-leaf" style="top: 24%; left: 74%;">😡</div>
+    <div class="emoji-leaf" style="top: 33.7%; left: 45%;">😐</div>
+    <div class="emoji-leaf" style="top: 37.3%; left: 67%;">🤯</div>
+    <div class="emoji-leaf" style="top: 30%; left: 20%;">😢</div>
+    <div class="emoji-leaf" style="top: 40%; left: 89.8%;">😴</div>
+    <div class="emoji-leaf" style="top: 59%; left: 75%;">😌</div>
+    <div class="emoji-leaf" style="top: 46%; left: 24.4%;">😄</div>
+    <div class="emoji-leaf" style="top: 12%; left: 77%;">🤗</div>
+  </div>
+
+  <section id="about">
+    <h2>About Mood Mate</h2>
+    <p>
+      Mood Mate is a heartfelt digital companion crafted to support your mental and emotional well-being.
+      We believe tracking your emotions can help you better understand your inner self, recognize patterns,
+      and build resilience over time. Whether you're feeling joyful, anxious, excited, or simply reflective,
+      Mood Mate provides a safe space to acknowledge your feelings and grow emotionally.
+      Let’s take this journey together — one mood at a time.
+    </p>
+  </section>
+</body>
+</html>
