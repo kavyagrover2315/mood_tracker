@@ -3,6 +3,6 @@ services:
     name: moodmate-app
     env: python
     buildCommand: ""
-    startCommand: gunicorn app:app
+    startCommand: python aiandsong.py
     plan: free
     autoDeploy: true
