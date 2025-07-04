@@ -179,10 +179,31 @@ def land():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    print("✅ /login route accessed")
+
     if request.method == 'POST':
-        session['user_id'] = 1
-        return redirect(url_for('dashboard'))
+        username = request.form.get('username')
+        password = request.form.get('password')
+        email = request.form.get('email')
+        age = request.form.get('age')
+        gender = request.form.get('gender')
+
+        # Check that all fields are filled
+        if username and password and email and age and gender:
+            session['user_id'] = 1
+            session['username'] = username
+            session['email'] = email
+            session['age'] = age
+            session['gender'] = gender
+
+            print(f"✅ Login successful for user: {username}, email: {email}")
+            return redirect(url_for('dashboard'))
+        else:
+            error = "All fields are required."
+            return render_template('auth.html', error=error)
+
     return render_template('auth.html')
+
 
 @app.route('/dashboard')
 def dashboard():
