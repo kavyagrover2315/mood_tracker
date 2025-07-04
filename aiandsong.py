@@ -9,6 +9,7 @@ import db_manager
 from flask import session 
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
+import json
 import numpy as np
 
 
@@ -16,17 +17,15 @@ app = Flask(__name__)
 app.secret_key = 'your_super_secret_key'
 CORS(app)
 
-# --- Spotify OAuth ---
-SPOTIPY_CLIENT_ID = "77cf44ff9c5b48eb9d241ef572eaeb35"
-SPOTIPY_CLIENT_SECRET = "6d69a6146d5d49c6b88077dbf3024e12"
-SPOTIPY_REDIRECT_URI = "http://127.0.0.1:5000/callback"
-SPOTIPY_SCOPE = "playlist-modify-public user-read-private"
+SPOTIPY_CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
+SPOTIPY_CLIENT_SECRET = os.getenv("SPOTIPY_CLIENT_SECRET")
+SPOTIPY_REDIRECT_URI = os.getenv("SPOTIPY_REDIRECT_URI")
 
 sp_oauth = SpotifyOAuth(
     client_id=SPOTIPY_CLIENT_ID,
     client_secret=SPOTIPY_CLIENT_SECRET,
     redirect_uri=SPOTIPY_REDIRECT_URI,
-    scope=SPOTIPY_SCOPE
+    
 )
 
 
@@ -109,40 +108,50 @@ def get_ai_suggestion(text):
         "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json"
     }
+
+    system_prompt = """
+You are a supportive emotional wellness assistant.
+Your job is to:
+1. Detect the user's mood (like happy, sad, anxious, excited, tired, bored, etc.).
+2. Suggest five brief and helpful tips, self-care ideas, or advice to support them.
+3. Respond ONLY in this JSON format:
+{
+  "mood": "<one-word-mood>",
+  "emoji": "<emoji>",
+  "suggestions": [
+    "Tip 1",
+    "Tip 2",
+    "Tip 3",
+    "Tip 4",
+    "Tip 5"
+  ]
+}
+Do NOT include explanations or extra text.
+"""
+
     data = {
         "model": "llama3-8b-8192",
         "messages": [
-            {"role": "system", "content": "You are a helpful mental health assistant."},
-            {"role": "user", "content": text}
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"My message: {text}"}
         ],
-        "max_tokens": 150,
+        "max_tokens": 300,
         "temperature": 0.7
     }
+
     try:
         response = requests.post(url, headers=headers, json=data)
-        return response.json()['choices'][0]['message']['content'].strip()
-    except:
-        return "I'm having trouble generating a suggestion. Please try again later."
+        content = response.json()["choices"][0]["message"]["content"].strip()
 
-# --- Helpers ---
-# ✅ Lightweight and fast: 250MB
-MODEL_NAME = "distilbert-base-uncased-finetuned-sst-2-english"
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
+        result = json.loads(content)
+        return result["mood"], result["emoji"], result["suggestions"]
 
-labels = ['negative', 'positive']  # for SST-2
+    except Exception as e:
+        print("Error:", e)
+        return "neutral", "😐", ["Take a deep breath.", "Go for a short walk.", "Write your thoughts down.", "Talk to someone you trust.", "Listen to calming music."]
 
-def detect_user_mood(text):
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
-    with torch.no_grad():
-        outputs = model(**inputs)
-        probs = torch.nn.functional.softmax(outputs.logits, dim=1)
-        label = labels[probs.argmax().item()]
 
-    mood = "happy" if label == "positive" else "sad"
-    emoji = EMOJI_MAP.get(mood, "😐")
-    print(f"Detected mood: {mood} ({label})")
-    return mood, emoji
+
 
 def generate_spotify_url(mood):
     playlist_links = {
@@ -192,9 +201,6 @@ def home():
     return render_template("index1.html")
 
 
-
-
-
 @app.route("/detect_mood", methods=["POST"])
 def detect_mood():
     text = request.form.get('text', '').strip()
@@ -202,18 +208,16 @@ def detect_mood():
     if not text:
         return render_template("index1.html", error="Please describe your mood.")
 
-    # Detect mood and emoji
-    mood, emoji = detect_user_mood(text)
+    # 🧠 NEW: Use LLaMA to get mood, emoji, and 5 suggestions
+    mood, emoji, suggestions = get_ai_suggestion(text)
 
     # Save to session
     session['text'] = text
     session['mood'] = mood
     session['emoji'] = emoji
+    session['suggestions'] = suggestions  # ✔️ Save list of suggestions
 
-    # Redirect to AI-enhanced mood detail page
     return redirect(url_for('mood_detail'))
-
-
 
 
 @app.route("/mood_details")
@@ -221,9 +225,9 @@ def mood_detail():
     text = session.get("text", "I'm feeling...")
     mood = session.get("mood", "neutral")
     emoji = session.get("emoji", "😐")
+    suggestions = session.get("suggestions", ["Take a deep breath."])  # ✔️ Get suggestion list
 
     tip = MOOD_TIPS.get(mood, "You're doing your best.")
-    ai_suggestion = get_ai_suggestion(text)
     playlist_url = generate_spotify_url(mood)
     playlist_songs = SONG_LIBRARY.get(mood, [])
 
@@ -231,9 +235,14 @@ def mood_detail():
                            mood_name=mood,
                            mood_emoji=emoji,
                            tip=tip,
-                           suggestion=ai_suggestion,
+                           suggestion_list=suggestions,
                            playlist_url=playlist_url,
                            playlist_songs=playlist_songs)
+
+
+
+
+
 
 
 
@@ -294,4 +303,3 @@ if __name__ == "__main__":
     db_manager.init_db()
     port = int(os.environ.get("PORT", 10000))  # or 5000 as fallback
     app.run(host="0.0.0.0", port=port)
-
