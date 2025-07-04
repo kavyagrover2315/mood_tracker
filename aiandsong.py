@@ -170,12 +170,11 @@ def generate_spotify_url(mood):
         "loved": "https://open.spotify.com/embed/playlist/37i9dQZF1DWYxwmBaMqxsl"
     }
     return playlist_links.get(mood, playlist_links["neutral"])
-
-# --- Routes ---
+    
 @app.before_first_request
 def initialize_database():
     init_db()
-
+# --- Routes ---
 @app.route('/')
 def land():
     return render_template('land.html')
@@ -302,5 +301,7 @@ def edit_mood(mood_id):
     return jsonify(status='success' if success else 'fail')
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # fallback to 5000 locally
+    db_manager.init_db()
+    port = int(os.environ.get("PORT", 5000))  # or 5000 as fallback
     app.run(host="0.0.0.0", port=port)
+
