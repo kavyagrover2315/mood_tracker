@@ -177,34 +177,41 @@ def generate_spotify_url(mood):
 def land():
     return render_template('land.html')
 
+from flask import Flask, render_template, request, redirect, url_for, session
+import db_manager
+
+app = Flask(__name__)
+app.secret_key = "super-secret-key"
+
+# 🔐 Login route (only username required)
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     print("✅ /login route accessed")
 
     if request.method == 'POST':
         username = request.form.get('username')
-        password = request.form.get('password')
-        email = request.form.get('email')
-        age = request.form.get('age')
-        gender = request.form.get('gender')
+        password = request.form.get('password')  # optional
+        email = request.form.get('email')        # optional
+        age = request.form.get('age')            # optional
+        gender = request.form.get('gender')      # optional
 
-        # Check that all fields are filled
-        if username and password and email and age and gender:
-            session['user_id'] = 1
+        if username:
+            session['user_id'] = 1  # Dummy value
             session['username'] = username
+            session['password'] = password
             session['email'] = email
             session['age'] = age
             session['gender'] = gender
 
-            print(f"✅ Login successful for user: {username}, email: {email}")
+            print(f"✅ Login success: {username}")
             return redirect(url_for('dashboard'))
         else:
-            error = "All fields are required."
+            error = "Username is required to login."
             return render_template('auth.html', error=error)
 
     return render_template('auth.html')
 
-
+# 📊 Dashboard route
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
@@ -214,11 +221,13 @@ def dashboard():
     moods = db_manager.get_all_moods()
     return render_template('dashboard.html', moods=moods)
 
+# 😄 Mood input page
 @app.route('/index1')
 def index1():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     return render_template('index1.html')
+
 
 
 @app.route("/")
@@ -323,6 +332,6 @@ def edit_mood(mood_id):
 
 if __name__ == "__main__":
     db_manager.init_db()
-    port = int(os.environ.get("PORT", 5000))  # or 5000 as fallback
+    port = int(os.environ.get("PORT", 10000))  # or 5000 as fallback
     app.run(host="0.0.0.0", port=port)
 
