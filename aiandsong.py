@@ -225,8 +225,7 @@ def dashboard():
 @app.route('/index1')
 def index1():
     if 'user_id' not in session:
-        return redirect(url_for('login'))
-    return render_template('index1.html')
+return render_template('index1.html')
 
 
 
