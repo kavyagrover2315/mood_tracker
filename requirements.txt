@@ -8,3 +8,4 @@ python-dotenv
 werkzeug
 numpy
 gunicorn  
+psycopg2-binary
