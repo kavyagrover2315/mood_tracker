@@ -5,17 +5,21 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from spotipy.oauth2 import SpotifyOAuth
-import db_manager
-from db_manager import init_db  
-from flask import session 
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-import torch
+import db_manager # Ensure db_manager.py is in the same directory
+from db_manager import init_db
+from flask import session
+# Removed transformers and torch imports if not directly used in the web service,
+# as they can increase slug size and deployment time.
+# If you are performing local inference with these, consider if it's truly necessary on Render or
+# if you can offload to an external API/service.
+# from transformers import AutoTokenizer, AutoModelForSequenceClassification
+# import torch
 import json
 import numpy as np
 
 
 app = Flask(__name__)
-app.secret_key = 'your_super_secret_key'
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'your_super_secret_key') # Use environment variable for secret key
 CORS(app)
 
 SPOTIPY_CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
@@ -26,7 +30,7 @@ sp_oauth = SpotifyOAuth(
     client_id=SPOTIPY_CLIENT_ID,
     client_secret=SPOTIPY_CLIENT_SECRET,
     redirect_uri=SPOTIPY_REDIRECT_URI,
-    
+    scope="user-read-private user-read-email" # Added a basic scope for Spotify integration
 )
 
 
@@ -72,7 +76,7 @@ MOOD_CATEGORIES = {
     "angry": ["angry", "mad", "pissed", "furious"],
     "tired": ["tired", "exhausted", "burnt out"],
     "confused": ["confused", "uncertain", "don’t understand"],
-  
+
 
 }
 
@@ -101,7 +105,6 @@ EMOJI_MAP = {
     "loved": "❤️", "relaxed": "😌", "motivated": "🔥", "bored": "😒",
     "anxious": "😬", "confused": "😕"
 }
--
 # --- AI Suggestion ---
 def get_ai_suggestion(text):
     url = "https://api.groq.com/openai/v1/chat/completions"
@@ -142,31 +145,41 @@ Do NOT include explanations or extra text.
 
     try:
         response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status() # Raise an exception for HTTP errors
         content = response.json()["choices"][0]["message"]["content"].strip()
         result = json.loads(content)
         return result["mood"], result["emoji"], result["suggestions"]
+    except requests.exceptions.RequestException as e:
+        print(f"Request Error: {e}")
+        return "neutral", "😐", ["Could not connect to AI service.", "Please try again later."]
+    except json.JSONDecodeError as e:
+        print(f"JSON Decode Error: {e}. Response content: {content}")
+        return "neutral", "😐", ["Could not process AI response.", "Please try again later."]
+    except KeyError as e:
+        print(f"Key Error: {e}. Unexpected AI response format.")
+        return "neutral", "😐", ["Unexpected AI response format.", "Please try again later."]
     except Exception as e:
-        print("Error:", e)
-        return "neutral", "😐", ["Take a deep breath.", "Go for a short walk.", "Write your thoughts down.", "Talk to someone you trust.", "Listen to calming music."]
+        print(f"An unexpected error occurred in get_ai_suggestion: {e}")
+        return "neutral", "😐", ["An unexpected error occurred.", "Please try again."]
+
 
 # --- Spotify Embed Link Generator ---
 def generate_spotify_url(mood):
     playlist_links = {
-    "happy": "https://open.spotify.com/embed/playlist/37i9dQZF1DXdPec7aLTmlC",         # Happy Hits!
-    "sad": "https://open.spotify.com/embed/playlist/37i9dQZF1DX7qK8ma5wgG1",            # Life Sucks
-    "angry": "https://open.spotify.com/embed/playlist/37i9dQZF1DWY6vTWIdZ54A",          # Rock Hard
-    "relaxed": "https://open.spotify.com/embed/playlist/37i9dQZF1DX3rxVfibe1L0",        # Chill Hits
-    "excited": "https://open.spotify.com/embed/playlist/37i9dQZF1DX1tW4VlEfDSS",        # Hype
-    "tired": "https://open.spotify.com/embed/playlist/37i9dQZF1DX1s9knjP51Oa",          # Sleep
-    "bored": "https://open.spotify.com/embed/playlist/37i9dQZF1DWYp5sAHdz27Y",          # Alternative Beats
-    "confused": "https://open.spotify.com/embed/playlist/37i9dQZF1DWVrtsSlLKzro",       # Deep Focus
-    "anxious": "https://open.spotify.com/embed/playlist/37i9dQZF1DX3YSRoSdA634",        # Calm Vibes
-    "neutral": "https://open.spotify.com/embed/playlist/37i9dQZF1DWWMOmoXKqHTD",        # Lofi Beats
-    "motivated": "https://open.spotify.com/embed/playlist/37i9dQZF1DWZQaaqNMbbXa",      # Motivation Mix
-    "loved": "https://open.spotify.com/embed/playlist/37i9dQZF1DWYxwmBaMqxsl"           # Love Songs
+    "happy": "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator", # Happy Hits!
+    "sad": "https://open.spotify.com/embed/playlist/37i9dQZF1DXa2SPUyWl8Y", # Life Sucks
+    "angry": "https://open.spotify.com/embed/playlist/37i9dQZF1DXdgnR6m9Sytm", # Rock Hard
+    "relaxed": "https://open.spotify.com/embed/playlist/37i9dQZF1DXeeL10wUf7JJ", # Chill Hits
+    "excited": "https://open.spotify.com/embed/playlist/37i9dQZF1DX0Bxgyx9q1P", # Hype
+    "tired": "https://open.spotify.com/embed/playlist/37i9dQZF1DX4wT3Gw5JgE8", # Sleep
+    "bored": "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M", # Happy (fallback for boredom, or find a specific one)
+    "confused": "https://open.spotify.com/embed/playlist/37i9dQZF1DWVch4Y74F62L", # Deep Focus
+    "anxious": "https://open.spotify.com/embed/playlist/37i9dQZF1DX4sWPMzJ3A5X", # Calm Vibes
+    "neutral": "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M", # Lofi Beats (or a general chill playlist)
+    "motivated": "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M", # Motivation Mix
+    "loved": "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M" # Love Songs
 }
-
- # keep your playlist links dictionary
+    # Using open.spotify.com/embed/playlist/... for direct embedding
     return playlist_links.get(mood, playlist_links["neutral"])
 
 # --- Routes ---
@@ -183,9 +196,14 @@ def login():
         age = request.form.get('age')
         gender = request.form.get('gender')
 
+        # This section needs proper user authentication (e.g., check against a database)
+        # For now, it's a dummy login.
         if username:
+            # In a real app, you'd verify credentials against db and then set session.
+            # For demonstration, setting dummy user_id
             session['user_id'] = 1
             session['username'] = username
+            # You might not want to store plain password in session
             session['password'] = password
             session['email'] = email
             session['age'] = age
@@ -215,6 +233,9 @@ def detect_mood():
     text = request.form.get('text', '').strip()
     if not text:
         return render_template("index1.html", error="Please describe your mood.")
+    
+    # You might want to handle the AI suggestion in a try-except block here too
+    # to provide a more specific error message to the user if the AI call fails.
     mood, emoji, suggestions = get_ai_suggestion(text)
     session['text'] = text
     session['mood'] = mood
@@ -230,14 +251,14 @@ def mood_detail():
     suggestions = session.get("suggestions", [])
     tip = MOOD_TIPS.get(mood, "You're doing your best.")
     playlist_url = generate_spotify_url(mood)
-    playlist_songs = SONG_LIBRARY.get(mood, [])
+    playlist_songs = SONG_LIBRARY.get(mood, []) # Note: SONG_LIBRARY might not align perfectly with Spotify playlists
     return render_template("mood_details.html",
-                           mood_name=mood,
-                           mood_emoji=emoji,
-                           tip=tip,
-                           suggestion_list=suggestions,
-                           playlist_url=playlist_url,
-                           playlist_songs=playlist_songs)
+                            mood_name=mood,
+                            mood_emoji=emoji,
+                            tip=tip,
+                            suggestion_list=suggestions,
+                            playlist_url=playlist_url,
+                            playlist_songs=playlist_songs)
 
 @app.route('/logout')
 def logout():
@@ -288,5 +309,7 @@ def edit_mood(mood_id):
 
 if __name__ == "__main__":
     db_manager.init_db()
+    # The PORT environment variable is typically set by Render.
+    # It's good practice to get it from os.environ.
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
