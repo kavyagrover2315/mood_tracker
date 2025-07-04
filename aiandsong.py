@@ -296,10 +296,6 @@ def edit_mood(mood_id):
     success = db_manager.edit_mood(mood_id, data['name'], data['emoji'], data['reason'])
     return jsonify(status='success' if success else 'fail')
 
-
-
-
 if __name__ == "__main__":
-    db_manager.init_db()
-    port = int(os.environ.get("PORT", 10000))  # or 5000 as fallback
+    port = int(os.environ.get("PORT", 5000))  # fallback to 5000 locally
     app.run(host="0.0.0.0", port=port)
