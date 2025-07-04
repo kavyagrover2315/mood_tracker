@@ -5,15 +5,10 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from spotipy.oauth2 import SpotifyOAuth
-import db_manager # Ensure db_manager.py is in the same directory
+import db_manager
 from db_manager import init_db
-from flask import session
-# Removed transformers and torch imports if not directly used in the web service,
-# as they can increase slug size and deployment time.
-# If you are performing local inference with these, consider if it's truly necessary on Render or
-# if you can offload to an external API/service.
-# from transformers import AutoTokenizer, AutoModelForSequenceClassification
-# import torch
+# from transformers import AutoTokenizer, AutoModelForSequenceClassification # Removed if not directly used
+# import torch # Removed if not directly used
 import json
 import numpy as np
 
@@ -196,15 +191,17 @@ def login():
         age = request.form.get('age')
         gender = request.form.get('gender')
 
-        # This section needs proper user authentication (e.g., check against a database)
-        # For now, it's a dummy login.
+        # IMPORTANT: This is a dummy login for demonstration.
+        # In a real application, you MUST implement proper user registration,
+        # password hashing (e.g., using generate_password_hash and check_password_hash),
+        # and retrieve a unique user_id from a database after successful authentication.
+        # For now, we'll assign a simple incremental ID for demonstration purposes
+        # to simulate different users.
         if username:
-            # In a real app, you'd verify credentials against db and then set session.
-            # For demonstration, setting dummy user_id
-            session['user_id'] = 1
+            # For demonstration, let's assign a simple user_id based on username length
+            # In a real app, this would be from your user database.
+            session['user_id'] = len(username) # This is just for demo, not secure or unique enough
             session['username'] = username
-            # You might not want to store plain password in session
-            session['password'] = password
             session['email'] = email
             session['age'] = age
             session['gender'] = gender
@@ -219,7 +216,10 @@ def login():
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    moods = db_manager.get_all_moods()
+    
+    current_user_id = session['user_id']
+    # Pass user_id to get_all_moods to retrieve only the current user's moods
+    moods = db_manager.get_all_moods(current_user_id)
     return render_template('dashboard.html', moods=moods)
 
 @app.route('/index1')
@@ -230,12 +230,13 @@ def index1():
 
 @app.route('/detect_mood', methods=["POST"])
 def detect_mood():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     text = request.form.get('text', '').strip()
     if not text:
         return render_template("index1.html", error="Please describe your mood.")
     
-    # You might want to handle the AI suggestion in a try-except block here too
-    # to provide a more specific error message to the user if the AI call fails.
     mood, emoji, suggestions = get_ai_suggestion(text)
     session['text'] = text
     session['mood'] = mood
@@ -245,6 +246,9 @@ def detect_mood():
 
 @app.route('/mood_details')
 def mood_detail():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     text = session.get("text", "I'm feeling...")
     mood = session.get("mood", "neutral")
     emoji = session.get("emoji", "😐")
@@ -267,6 +271,9 @@ def logout():
 
 @app.route('/add_mood', methods=['POST'])
 def add_mood():
+    if 'user_id' not in session:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+
     data = request.get_json()
     emoji = data.get('emoji')
     name = data.get('name')
@@ -275,41 +282,59 @@ def add_mood():
     if not all([emoji, name, timestamp]):
         return jsonify({'status': 'error', 'message': 'Missing data'}), 400
     try:
-        user_id = session.get('user_id', None)
-        db_manager.add_mood(user_id, emoji, name, reason, timestamp)
+        current_user_id = session['user_id']
+        db_manager.add_mood(current_user_id, emoji, name, reason, timestamp)
         return jsonify({'status': 'success', 'message': 'Mood added successfully!'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/get_moods')
 def get_moods():
+    if 'user_id' not in session:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+
     try:
-        moods_list = db_manager.get_all_moods()
+        current_user_id = session['user_id']
+        # Pass user_id to get_all_moods to retrieve only the current user's moods
+        moods_list = db_manager.get_all_moods(current_user_id)
         return jsonify({'moods': moods_list})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/get_mood/<int:mood_id>')
 def get_mood(mood_id):
-    mood = db_manager.get_mood_by_id(mood_id)
+    if 'user_id' not in session:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+
+    current_user_id = session['user_id']
+    # Pass user_id to get_mood_by_id to ensure the mood belongs to the user
+    mood = db_manager.get_mood_by_id(mood_id, current_user_id)
     if mood:
         return jsonify(status='success', mood=mood)
-    return jsonify(status='fail', message='Mood not found')
+    return jsonify(status='fail', message='Mood not found or not authorized')
 
 @app.route('/delete_mood/<int:mood_id>', methods=['DELETE'])
 def delete_mood_route(mood_id):
-    success = db_manager.delete_mood(mood_id)
+    if 'user_id' not in session:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+
+    current_user_id = session['user_id']
+    # Pass user_id to delete_mood to ensure the mood belongs to the user
+    success = db_manager.delete_mood(mood_id, current_user_id)
     return jsonify(status='success' if success else 'fail')
 
 @app.route('/edit_mood/<int:mood_id>', methods=['PUT'])
 def edit_mood(mood_id):
+    if 'user_id' not in session:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+
     data = request.get_json()
-    success = db_manager.edit_mood(mood_id, data['name'], data['emoji'], data['reason'])
+    current_user_id = session['user_id']
+    # Pass user_id to edit_mood to ensure the mood belongs to the user
+    success = db_manager.edit_mood(mood_id, current_user_id, data['name'], data['emoji'], data['reason'])
     return jsonify(status='success' if success else 'fail')
 
 if __name__ == "__main__":
     db_manager.init_db()
-    # The PORT environment variable is typically set by Render.
-    # It's good practice to get it from os.environ.
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
