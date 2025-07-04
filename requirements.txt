@@ -1,9 +1,9 @@
-flask
-gunicorn
 Flask
-requests
-spotipy
 flask-cors
-werkzeug
-transformers
+requests
 torch
+transformers
+spotipy
+python-dotenv
+werkzeug
+numpy
