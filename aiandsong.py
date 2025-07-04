@@ -6,6 +6,7 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from spotipy.oauth2 import SpotifyOAuth
 import db_manager
+from db_manager import init_db  
 from flask import session 
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
@@ -171,6 +172,10 @@ def generate_spotify_url(mood):
     return playlist_links.get(mood, playlist_links["neutral"])
 
 # --- Routes ---
+@app.before_first_request
+def initialize_database():
+    init_db()
+
 @app.route('/')
 def land():
     return render_template('land.html')
