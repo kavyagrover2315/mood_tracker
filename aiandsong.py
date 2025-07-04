@@ -101,7 +101,7 @@ EMOJI_MAP = {
     "loved": "❤️", "relaxed": "😌", "motivated": "🔥", "bored": "😒",
     "anxious": "😬", "confused": "😕"
 }
-
+-
 # --- AI Suggestion ---
 def get_ai_suggestion(text):
     url = "https://api.groq.com/openai/v1/chat/completions"
@@ -143,67 +143,53 @@ Do NOT include explanations or extra text.
     try:
         response = requests.post(url, headers=headers, json=data)
         content = response.json()["choices"][0]["message"]["content"].strip()
-
         result = json.loads(content)
         return result["mood"], result["emoji"], result["suggestions"]
-
     except Exception as e:
         print("Error:", e)
         return "neutral", "😐", ["Take a deep breath.", "Go for a short walk.", "Write your thoughts down.", "Talk to someone you trust.", "Listen to calming music."]
 
-
-
-
+# --- Spotify Embed Link Generator ---
 def generate_spotify_url(mood):
     playlist_links = {
-        "happy": "https://open.spotify.com/embed/playlist/37i9dQZF1DXdPec7aLTmlC",
-        "sad": "https://open.spotify.com/embed/playlist/37i9dQZF1DX7qK8ma5wgG1",
-        "angry": "https://open.spotify.com/embed/playlist/37i9dQZF1DWY6vTWIdZ54A",
-        "relaxed": "https://open.spotify.com/embed/playlist/37i9dQZF1DX3rxVfibe1L0",
-        "excited": "https://open.spotify.com/embed/playlist/37i9dQZF1DX1tW4VlEfDSS",
-        "tired": "https://open.spotify.com/embed/playlist/37i9dQZF1DX1s9knjP51Oa",
-        "bored": "https://open.spotify.com/embed/playlist/37i9dQZF1DWYp5sAHdz27Y",
-        "confused": "https://open.spotify.com/embed/playlist/37i9dQZF1DWVrtsSlLKzro",
-        "anxious": "https://open.spotify.com/embed/playlist/37i9dQZF1DX3YSRoSdA634",
-        "neutral": "https://open.spotify.com/embed/playlist/37i9dQZF1DWWMOmoXKqHTD",
-        "motivated": "https://open.spotify.com/embed/playlist/37i9dQZF1DWZQaaqNMbbXa",
-        "loved": "https://open.spotify.com/embed/playlist/37i9dQZF1DWYxwmBaMqxsl"
-    }
+    "happy": "https://open.spotify.com/embed/playlist/37i9dQZF1DXdPec7aLTmlC",         # Happy Hits!
+    "sad": "https://open.spotify.com/embed/playlist/37i9dQZF1DX7qK8ma5wgG1",            # Life Sucks
+    "angry": "https://open.spotify.com/embed/playlist/37i9dQZF1DWY6vTWIdZ54A",          # Rock Hard
+    "relaxed": "https://open.spotify.com/embed/playlist/37i9dQZF1DX3rxVfibe1L0",        # Chill Hits
+    "excited": "https://open.spotify.com/embed/playlist/37i9dQZF1DX1tW4VlEfDSS",        # Hype
+    "tired": "https://open.spotify.com/embed/playlist/37i9dQZF1DX1s9knjP51Oa",          # Sleep
+    "bored": "https://open.spotify.com/embed/playlist/37i9dQZF1DWYp5sAHdz27Y",          # Alternative Beats
+    "confused": "https://open.spotify.com/embed/playlist/37i9dQZF1DWVrtsSlLKzro",       # Deep Focus
+    "anxious": "https://open.spotify.com/embed/playlist/37i9dQZF1DX3YSRoSdA634",        # Calm Vibes
+    "neutral": "https://open.spotify.com/embed/playlist/37i9dQZF1DWWMOmoXKqHTD",        # Lofi Beats
+    "motivated": "https://open.spotify.com/embed/playlist/37i9dQZF1DWZQaaqNMbbXa",      # Motivation Mix
+    "loved": "https://open.spotify.com/embed/playlist/37i9dQZF1DWYxwmBaMqxsl"           # Love Songs
+}
+
+ # keep your playlist links dictionary
     return playlist_links.get(mood, playlist_links["neutral"])
-    
 
 # --- Routes ---
 @app.route('/')
 def land():
     return render_template('land.html')
 
-from flask import Flask, render_template, request, redirect, url_for, session
-import db_manager
-
-app = Flask(__name__)
-app.secret_key = "super-secret-key"
-
-# 🔐 Login route (only username required)
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    print("✅ /login route accessed")
-
     if request.method == 'POST':
         username = request.form.get('username')
-        password = request.form.get('password')  # optional
-        email = request.form.get('email')        # optional
-        age = request.form.get('age')            # optional
-        gender = request.form.get('gender')      # optional
+        password = request.form.get('password')
+        email = request.form.get('email')
+        age = request.form.get('age')
+        gender = request.form.get('gender')
 
         if username:
-            session['user_id'] = 1  # Dummy value
+            session['user_id'] = 1
             session['username'] = username
             session['password'] = password
             session['email'] = email
             session['age'] = age
             session['gender'] = gender
-
-            print(f"✅ Login success: {username}")
             return redirect(url_for('dashboard'))
         else:
             error = "Username is required to login."
@@ -211,59 +197,40 @@ def login():
 
     return render_template('auth.html')
 
-# 📊 Dashboard route
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-
-    print("🧠 Session:", dict(session))
     moods = db_manager.get_all_moods()
     return render_template('dashboard.html', moods=moods)
 
-# 😄 Mood input page
 @app.route('/index1')
 def index1():
     if 'user_id' not in session:
-return render_template('index1.html')
+        return redirect(url_for('login'))
+    return render_template('index1.html')
 
-
-
-@app.route("/")
-def home():
-    return render_template("index1.html")
-
-
-@app.route("/detect_mood", methods=["POST"])
+@app.route('/detect_mood', methods=["POST"])
 def detect_mood():
     text = request.form.get('text', '').strip()
-
     if not text:
         return render_template("index1.html", error="Please describe your mood.")
-
-    # 🧠 NEW: Use LLaMA to get mood, emoji, and 5 suggestions
     mood, emoji, suggestions = get_ai_suggestion(text)
-
-    # Save to session
     session['text'] = text
     session['mood'] = mood
     session['emoji'] = emoji
-    session['suggestions'] = suggestions  # ✔️ Save list of suggestions
-
+    session['suggestions'] = suggestions
     return redirect(url_for('mood_detail'))
 
-
-@app.route("/mood_details")
+@app.route('/mood_details')
 def mood_detail():
     text = session.get("text", "I'm feeling...")
     mood = session.get("mood", "neutral")
     emoji = session.get("emoji", "😐")
-    suggestions = session.get("suggestions", ["Take a deep breath."])  # ✔️ Get suggestion list
-
+    suggestions = session.get("suggestions", [])
     tip = MOOD_TIPS.get(mood, "You're doing your best.")
     playlist_url = generate_spotify_url(mood)
     playlist_songs = SONG_LIBRARY.get(mood, [])
-
     return render_template("mood_details.html",
                            mood_name=mood,
                            mood_emoji=emoji,
@@ -271,13 +238,6 @@ def mood_detail():
                            suggestion_list=suggestions,
                            playlist_url=playlist_url,
                            playlist_songs=playlist_songs)
-
-
-
-
-
-
-
 
 @app.route('/logout')
 def logout():
@@ -291,10 +251,8 @@ def add_mood():
     name = data.get('name')
     reason = data.get('reason')
     timestamp = data.get('timestamp')
-
     if not all([emoji, name, timestamp]):
         return jsonify({'status': 'error', 'message': 'Missing data'}), 400
-
     try:
         user_id = session.get('user_id', None)
         db_manager.add_mood(user_id, emoji, name, reason, timestamp)
@@ -308,7 +266,6 @@ def get_moods():
         moods_list = db_manager.get_all_moods()
         return jsonify({'moods': moods_list})
     except Exception as e:
-        print("Error in /get_moods:", e)
         return jsonify({'error': str(e)}), 500
 
 @app.route('/get_mood/<int:mood_id>')
@@ -331,6 +288,5 @@ def edit_mood(mood_id):
 
 if __name__ == "__main__":
     db_manager.init_db()
-    port = int(os.environ.get("PORT", 10000))  # or 5000 as fallback
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
