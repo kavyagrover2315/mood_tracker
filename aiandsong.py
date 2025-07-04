@@ -171,9 +171,7 @@ def generate_spotify_url(mood):
     }
     return playlist_links.get(mood, playlist_links["neutral"])
     
-@app.before_first_request
-def initialize_database():
-    init_db()
+
 # --- Routes ---
 @app.route('/')
 def land():
