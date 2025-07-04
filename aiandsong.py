@@ -209,6 +209,8 @@ def login():
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+
+    print("🧠 Session:", dict(session))
     moods = db_manager.get_all_moods()
     return render_template('dashboard.html', moods=moods)
 
