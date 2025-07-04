@@ -3,6 +3,6 @@ services:
     name: moodmate-app
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python aiandsong.py
+    startCommand: gunicorn aiandsong:app
     plan: free
     autoDeploy: true
