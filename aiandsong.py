@@ -7,8 +7,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from spotipy.oauth2 import SpotifyOAuth
 import db_manager
 from db_manager import init_db
-# from transformers import AutoTokenizer, AutoModelForSequenceClassification # Removed if not directly used
-# import torch # Removed if not directly used
 import json
 import numpy as np
 
@@ -25,7 +23,7 @@ sp_oauth = SpotifyOAuth(
     client_id=SPOTIPY_CLIENT_ID,
     client_secret=SPOTIPY_CLIENT_SECRET,
     redirect_uri=SPOTIPY_REDIRECT_URI,
-    scope="user-read-private user-read-email" # Added a basic scope for Spotify integration
+    scope="user-read-private user-read-email"
 )
 
 
@@ -112,7 +110,7 @@ def get_ai_suggestion(text):
 You are a supportive emotional wellness assistant.
 Your job is to:
 1. Detect the user's mood (like happy, sad, anxious, excited, tired, bored, etc.).
-2. Suggest five brief and helpful tips, self-care ideas, or advice to support them.
+2. Suggest between four and six brief and helpful tips, self-care ideas, or advice to support them.
 3. Respond ONLY in this JSON format:
 {
   "mood": "<one-word-mood>",
@@ -134,7 +132,7 @@ Do NOT include explanations or extra text.
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"My message: {text}"}
         ],
-        "max_tokens": 300,
+        "max_tokens": 300, # Max tokens should be sufficient for 4-6 tips
         "temperature": 0.7
     }
 
@@ -146,16 +144,16 @@ Do NOT include explanations or extra text.
         return result["mood"], result["emoji"], result["suggestions"]
     except requests.exceptions.RequestException as e:
         print(f"Request Error: {e}")
-        return "neutral", "😐", ["Could not connect to AI service.", "Please try again later."]
+        return "neutral", "😐", ["Could not connect to AI service.", "Please try again later.", "", "", ""] # Added empty strings for consistency
     except json.JSONDecodeError as e:
         print(f"JSON Decode Error: {e}. Response content: {content}")
-        return "neutral", "😐", ["Could not process AI response.", "Please try again later."]
+        return "neutral", "😐", ["Could not process AI response.", "Please try again later.", "", "", ""]
     except KeyError as e:
         print(f"Key Error: {e}. Unexpected AI response format.")
-        return "neutral", "😐", ["Unexpected AI response format.", "Please try again later."]
+        return "neutral", "😐", ["Unexpected AI response format.", "Please try again later.", "", "", ""]
     except Exception as e:
         print(f"An unexpected error occurred in get_ai_suggestion: {e}")
-        return "neutral", "😐", ["An unexpected error occurred.", "Please try again."]
+        return "neutral", "😐", ["An unexpected error occurred.", "Please try again.", "", "", ""]
 
 
 # --- Spotify Embed Link Generator ---
@@ -174,7 +172,6 @@ def generate_spotify_url(mood):
     "motivated": "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M", # Motivation Mix
     "loved": "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M" # Love Songs
 }
-    # Using open.spotify.com/embed/playlist/... for direct embedding
     return playlist_links.get(mood, playlist_links["neutral"])
 
 # --- Routes ---
@@ -218,7 +215,6 @@ def dashboard():
         return redirect(url_for('login'))
     
     current_user_id = session['user_id']
-    # Pass user_id to get_all_moods to retrieve only the current user's moods
     moods = db_manager.get_all_moods(current_user_id)
     return render_template('dashboard.html', moods=moods)
 
@@ -255,7 +251,7 @@ def mood_detail():
     suggestions = session.get("suggestions", [])
     tip = MOOD_TIPS.get(mood, "You're doing your best.")
     playlist_url = generate_spotify_url(mood)
-    playlist_songs = SONG_LIBRARY.get(mood, []) # Note: SONG_LIBRARY might not align perfectly with Spotify playlists
+    playlist_songs = SONG_LIBRARY.get(mood, [])
     return render_template("mood_details.html",
                             mood_name=mood,
                             mood_emoji=emoji,
@@ -295,7 +291,6 @@ def get_moods():
 
     try:
         current_user_id = session['user_id']
-        # Pass user_id to get_all_moods to retrieve only the current user's moods
         moods_list = db_manager.get_all_moods(current_user_id)
         return jsonify({'moods': moods_list})
     except Exception as e:
@@ -307,7 +302,6 @@ def get_mood(mood_id):
         return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
 
     current_user_id = session['user_id']
-    # Pass user_id to get_mood_by_id to ensure the mood belongs to the user
     mood = db_manager.get_mood_by_id(mood_id, current_user_id)
     if mood:
         return jsonify(status='success', mood=mood)
@@ -319,7 +313,6 @@ def delete_mood_route(mood_id):
         return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
 
     current_user_id = session['user_id']
-    # Pass user_id to delete_mood to ensure the mood belongs to the user
     success = db_manager.delete_mood(mood_id, current_user_id)
     return jsonify(status='success' if success else 'fail')
 
@@ -330,7 +323,6 @@ def edit_mood(mood_id):
 
     data = request.get_json()
     current_user_id = session['user_id']
-    # Pass user_id to edit_mood to ensure the mood belongs to the user
     success = db_manager.edit_mood(mood_id, current_user_id, data['name'], data['emoji'], data['reason'])
     return jsonify(status='success' if success else 'fail')
 
