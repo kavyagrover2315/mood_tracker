@@ -10,8 +10,7 @@ from flask import session
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import numpy as np
-import nltk
-nltk.download('punkt')
+
 
 app = Flask(__name__)
 app.secret_key = 'your_super_secret_key'
