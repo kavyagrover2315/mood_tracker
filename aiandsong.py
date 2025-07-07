@@ -170,13 +170,16 @@ def login():
         session['user_id'] = 1
         return redirect(url_for('dashboard'))
     return render_template('auth.html')
-
+    
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    moods = db_manager.get_all_moods()
+    
+    user_id = session['user_id']
+    moods = db_manager.get_all_moods(user_id)
     return render_template('dashboard.html', moods=moods)
+
 
 @app.route('/index1')
 def index1():
