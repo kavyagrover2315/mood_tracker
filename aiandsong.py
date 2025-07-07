@@ -166,6 +166,7 @@ def land():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        flash("Login Successful", "info")
         session['user_id'] = 1
         return redirect(url_for('dashboard'))
     return render_template('auth.html')
