@@ -52,22 +52,79 @@ SONG_LIBRARY = {
 }
 
 # --- Spotify Playlist Embed URLs ---
+import random
+
 def generate_spotify_url(mood):
     playlist_links = {
-        "happy": "https://open.spotify.com/embed/playlist/37i9dQZF1DXdPec7aLTmlC",
-        "sad": "https://open.spotify.com/embed/playlist/37i9dQZF1DX7qK8ma5wgG1",
-        "angry": "https://open.spotify.com/embed/playlist/37i9dQZF1DWY6vTWIdZ54A",
-        "relaxed": "https://open.spotify.com/embed/playlist/37i9dQZF1DX3rxVfibe1L0",
-        "excited": "https://open.spotify.com/embed/playlist/37i9dQZF1DX1tW4VlEfDSS",
-        "tired": "https://open.spotify.com/embed/playlist/37i9dQZF1DX1s9knjP51Oa",
-        "bored": "https://open.spotify.com/embed/playlist/37i9dQZF1DWYp5sAHdz27Y",
-        "confused": "https://open.spotify.com/embed/playlist/37i9dQZF1DWVrtsSlLKzro",
-        "anxious": "https://open.spotify.com/embed/playlist/37i9dQZF1DX3YSRoSdA634",
-        "neutral": "https://open.spotify.com/embed/playlist/37i9dQZF1DWWMOmoXKqHTD",
-        "motivated": "https://open.spotify.com/embed/playlist/37i9dQZF1DWZQaaqNMbbXa",
-        "loved": "https://open.spotify.com/embed/playlist/37i9dQZF1DWYxwmBaMqxsl"
+        "happy": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DXdPec7aLTmlC",
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWYBO1MoTDhZI"
+        ],
+        "sad": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DX7qK8ma5wgG1",
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWVrtsSlLKzro"
+        ],
+        "angry": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWY6vTWIdZ54A",
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DX3ND264N08pv"
+        ],
+        "relaxed": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DX3rxVfibe1L0",
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWUZ5bk6qqDSy"
+        ],
+        "excited": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DX1tW4VlEfDSS",
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DX3LyU0mhfqgP"
+        ],
+        "tired": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DX1s9knjP51Oa",
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DX6VdMW310YC7"
+        ],
+        "bored": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWYp5sAHdz27Y",
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWUcpsTLQUV0y"
+        ],
+        "confused": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWVrtsSlLKzro",
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWZ4kGz9NsnFJ"
+        ],
+        "anxious": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DX3YSRoSdA634",
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWUvHZA1zLcjW"
+        ],
+        "neutral": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWWMOmoXKqHTD",
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DX2sUQwD7tbmL"
+        ],
+        "motivated": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWZQaaqNMbbXa",
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DX76Wlfdnj7AP"
+        ],
+        "loved": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWYxwmBaMqxsl",
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DXc3KygMa1OE7"
+        ],
+        "grateful": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWVmps5U8gHNv"
+        ],
+        "lonely": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWV8IND7NkP2W"
+        ],
+        "hopeful": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWU0ScTcjJBdj"
+        ],
+        "guilty": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DX7K31D69s4M1"
+        ],
+        "surprised": [
+            "https://open.spotify.com/embed/playlist/37i9dQZF1DWYkaDif7Ztbp"
+        ]
     }
-    return playlist_links.get(mood, playlist_links["neutral"])
+
+    # Default to neutral if mood is unknown
+    playlists = playlist_links.get(mood.lower(), playlist_links["neutral"])
+    return random.choice(playlists)
+
 
 # --- AI Detection via Groq ---
 def detect_user_mood_and_suggestions(text):
@@ -156,6 +213,7 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+
 if __name__ == '__main__':
     db_manager.init_db()
-    app.run(debug=True)
+    app.run(debug=True, port=10000)
