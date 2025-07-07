@@ -166,10 +166,15 @@ def land():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        flash("Login Successful", "info")
-        session['user_id'] = 1
-        return redirect(url_for('dashboard'))
+        print("POST data:", request.form)
+        try:
+            session['user_id'] = 1
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            print("Login error:", e)
+            return "Login failed", 500
     return render_template('auth.html')
+
     
 @app.route('/dashboard')
 def dashboard():
@@ -217,7 +222,9 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-
 if __name__ == '__main__':
-    db_manager.init_db()
-    app.run(debug=True, port=10000)
+    from db_manager import init_db
+    init_db()
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port, debug=True)
+
